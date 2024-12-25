@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { hightlightsSlides } from "../constants"
 import { pauseImg, playImg, replayImg } from "../utils";
 import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 const VideoCarousel = () => {
     const videoRef = useRef([]);
@@ -16,10 +17,7 @@ const VideoCarousel = () => {
         isPlaying: false,
     })
 
-    useState [loadedData, setLoadedData] = useState({
-
-    })
-
+    const [loadedData, setLoadedData] = useState([]);
     const {isEnd, startPlay, videoId, isLastVideo, isPlaying} = video;
 
     useGSAP(() => {
@@ -97,8 +95,13 @@ const VideoCarousel = () => {
                                 onPlay={()=>setVideo((prevVideo)=>({
                                     ...prevVideo, isPlaying: true
                                 }))}
+                                onLoadedMetadata={(e) => {
+                                    handleLoadedMetaData( (i, e) => {
+                                        setLoadedData((pre) => [...pre, e])
+                                    })
+                                }}
                                 >
-                                    <source src="list.videp" type="video/mp4" />
+                                    <source src="list.video" type="video/mp4" />
                                 </video>
                             </div>
 
