@@ -21,6 +21,11 @@ const VideoCarousel = () => {
     const {isEnd, startPlay, videoId, isLastVideo, isPlaying} = video;
 
     useGSAP(() => {
+        gsap.to('#slider', {
+            transform: 'translate(${-100 * videoId}%)',
+            duration: 2,
+            ease: "power2.inOut"
+        })
         gsap.to('#video', {
             scrollTrigger: {
                 trigger: '#video',
@@ -30,17 +35,7 @@ const VideoCarousel = () => {
                 setVideo((pre) => ({...pre, startPlay: true, isPlaying: true}))
             }
         })
-    }, [isEnd,videoId])
-
-    useEffect(()=>{
-        if(loadedData.length > 3){
-            if(!isPlaying){
-                videoRef.current[vidoeId].pause();
-            } else {
-                startPlay && videoRef.current[vidoeId].play();
-            }
-        }
-    }, [startPlay, videoId, isPlaying, loadedData])
+    }, [isEnd, videoId])
 
     const handleLoadedMetaData = (i, e) => {
         setLoadedData((pre) => [...pre, e])
@@ -54,15 +49,66 @@ const VideoCarousel = () => {
             //animate the progress of the video
             let anim = gsap.to(span[videoId],{
                 onUpdate: () => {
-                    
+                    const progress = Math.cell(anim.progress() * 100);
+
+                    if(progress != currentProgress){
+                        currentProgress = progress;
+
+                        gsap.to(videoDivRef.current[videoId], {
+                            width: window.innerWidth < 700 ?
+                            "10vw" : window.innerWidth < 1200 ?
+                            "10vw" : "4vw"
+                        });
+
+                        gsap.to(span[videoId], {
+                            width: `${currentProgress}%`,
+                            backgroundColor: 'white'
+                        });
+                    }
                 },
 
                 onComlete: () => {
+                    if (isPlaying) {
+                        gsap.to(videoDivRef.current[videoId], {
+                        width: "12px",
+                        });
 
+                        gsap.to(span[videoId], {
+                        backgroundColor: "#afafaf",
+                        });
+                    }
                 }
             })
+
+            if (videoId == 0) {
+                anim.restart();
+            }
+
+            const animUpdate = () => {
+                anim.progress(
+                    videoRef.current[videoId].currentTime / hightlightsSlides[videoId].videoDuration
+                );
+            };
+
+            if(isPlaying){
+                gsap.ticker.add(animUpdate);
+            } else {
+                gsap.ticker.remove(animUpdate);
+            }
         }
-    }, [videoId, startPlay])
+    }, [videoId, startPlay]);
+
+    
+    useEffect(()=>{
+        if(loadedData.length > 3){
+            if(!isPlaying){
+                videoRef.current[videoId].pause();
+            } else {
+                startPlay && videoRef.current[videoId].play();
+            }
+        }
+    }, [startPlay, videoId, isPlaying, loadedData])
+
 
     const handleProcess = (type, i) => {
         switch (type){
@@ -79,6 +125,12 @@ const VideoCarousel = () => {
                 break;
             case 'play':
                 setVideo((pre) => ({ ...pre, isPlaying: !pre.isPlaying}))
+                break;
+            case 'pause':
+                setVideo((pre) => ({ ...pre, isPlaying: !pre.isPlaying}))
+                break;
+            default:
+                return video;
         }
 
     }
@@ -100,6 +152,13 @@ const VideoCarousel = () => {
                                         setLoadedData((pre) => [...pre, e])
                                     })
                                 }}
+                                onEnded={() => 
+                                    i !== 3 ? handleProcess("video-end", i)
+                                    : handleProcess("video-last")
+                                }
+                                className={`${
+                                    list.id === 2 && 'translate-x-44'
+                                } pointer-events-none` }
                                 >
                                     <source src="list.video" type="video/mp4" />
                                 </video>
