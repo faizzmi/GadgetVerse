@@ -5,6 +5,9 @@ import { yellowImg } from "../utils";
 import { useRef, useState } from "react";
 
 import * as THREE from 'three';
+import { Canvas } from "@react-three/fiber";
+import { View } from "@react-three/drei";
+import { models, sizes } from "../constants";
 
 const Model = () => {
 
@@ -19,7 +22,7 @@ const Model = () => {
     const cameraControlSmall = useRef();
     const cameraControlLarge = useRef();
 
-    const samll = useRef(new THREE.Group());
+    const small = useRef(new THREE.Group());
     const large = useRef(new THREE.Group());
 
     const [smallRotation, setSmallRotation] = useState(0);
@@ -47,8 +50,63 @@ const Model = () => {
                         setRotationState={setSmallRotation}
                         item={model}
                         size={size}
-                        
                     />
+
+                    <ModelView 
+                        index={2}
+                        groupRef={large}
+                        gsapType="view2"
+                        controlRef={cameraControlLarge}
+                        setRotationState={setLargeRotation}
+                        item={model}
+                        size={size}
+                    />
+
+                    <Canvas
+                    className="w-full h-full"
+                    style = {{
+                        position: 'fixed',
+                        top: 0,
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        overflow: 'hidden'
+                    }}
+                    eventSource = {document.getElementById('root')}
+                    >
+                        <View.Port />
+                    </Canvas>
+                </div>
+
+                <div className="mx-auto w-full">
+                    <p className="text-sm font-light text-center mb-5">{model.title}</p>
+                </div>
+
+                <div className="flex-center">
+                    <ul className="color-container">
+                        {models.map((item, i) => (
+                            <li key={i} className="w-6 h-6 rounded-full mx-2" style={{
+                                backgroundColor: item.color[0]
+                            }}
+                            onClick = {() => setModel(item)}
+                            ></li>
+                        ))}
+                    </ul>
+
+                    <button className="size-btn-container">
+                        {sizes.map(({label, value}) => (
+                            <span key={label} className="size-btn"
+                            style={{ 
+                                backgroundColor: size === value ?
+                                    'white' : size === value ? 
+                                    'black' : 'white'
+                            }}
+                            onClick={() => setSize(value)}
+                            >
+                                {label}
+                            </span>
+                        ))}
+                    </button>
                 </div>
             </div>
         </section>
